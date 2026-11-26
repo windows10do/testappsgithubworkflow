@@ -1,0 +1,27 @@
+
+name: Run RayanTerminal
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run RayanTerminal
+        shell: pwsh
+        run: |
+          if (!(Test-Path ".\rayanterminal.exe")) {
+            throw "rayanterminal.exe not found!"
+          }
+
+          & ".\rayanterminal.exe"
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "RayanTerminal failed!"
+          }
