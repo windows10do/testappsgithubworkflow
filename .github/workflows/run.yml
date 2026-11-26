@@ -5,23 +5,44 @@ on:
   push:
   workflow_dispatch:
 
+# Explicit GitHub Actions permissions
+permissions:
+  contents: read
+
 jobs:
   run:
+    name: Run on Windows
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run RayanTerminal
+      - name: Verify executable
         shell: pwsh
         run: |
+          Write-Host "Checking repository root..."
+
           if (!(Test-Path ".\rayanterminal.exe")) {
-            throw "rayanterminal.exe not found!"
+            Write-Error "rayanterminal.exe not found!"
+            Get-ChildItem -Force
+            exit 1
           }
 
-          & ".\rayanterminal.exe"
+          Write-Host "Executable found!"
 
-          if ($LASTEXITCODE -ne 0) {
-            throw "RayanTerminal failed!"
-          }
+      - name: Run RayanTerminal
+        shell: cmd
+        run: |
+          echo Starting RayanTerminal...
+          rayanterminal.exe
+          if errorlevel 1 exit /b 1
+          echo.
+          echo RayanTerminal completed successfully!
+
+      - name: Report result
+        shell: pwsh
+        run: |
+          Write-Host "RayanTerminal execution finished."
+          Write-Host "Runner: $env:RUNNER_OS"
+          Write-Host "Architecture: $env:PROCESSOR_ARCHITECTURE"
